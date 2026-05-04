@@ -1,61 +1,29 @@
 import streamlit as st
 import random
 
-# Initialize session state for game variables
-if 'score' not in st.session_state:
-    st.session_state.score = 0
-    st.session_state.question_count = 0
-    st.session_state.num1 = random.randint(1, 10)
-    st.session_state.num2 = random.randint(1, 10)
-    st.session_state.op = random.choice(['+', '-', '*'])
-    st.session_state.game_over = False
+st.title("🧮 सिंपल मैथ क्विज़")
 
-def next_question():
-    st.session_state.num1 = random.randint(1, 10)
-    st.session_state.num2 = random.randint(1, 10)
-    st.session_state.op = random.choice(['+', '-', '*'])
-    st.session_state.question_count += 1
+# गेम को रीसेट करने के लिए बटन
+if st.button('नया सवाल लाओ'):
+    st.session_state.num1 = random.randint(1, 20)
+    st.session_state.num2 = random.randint(1, 20)
+    st.session_state.ans = st.session_state.num1 + st.session_state.num2
 
-def reset_game():
-    st.session_state.score = 0
-    st.session_state.question_count = 0
-    st.session_state.game_over = False
-    next_question()
+# पहली बार चलाने के लिए वैल्यू सेट करना
+if 'num1' not in st.session_state:
+    st.session_state.num1 = random.randint(1, 20)
+    st.session_state.num2 = random.randint(1, 20)
+    st.session_state.ans = st.session_state.num1 + st.session_state.num2
 
-# --- UI Layout ---
-st.title("🧮 AI Math Quiz")
-st.write(f"Score: **{st.session_state.score}** | Question: **{st.session_state.question_count + 1}/5**")
+# सवाल दिखाएं
+st.subheader(f"बताओ: {st.session_state.num1} + {st.session_state.num2} = ?")
 
-if not st.session_state.game_over:
-    # Display the problem
-    q_text = f"What is {st.session_state.num1} {st.session_state.op} {st.session_state.num2}?"
-    st.subheader(q_text)
+# जवाब इनपुट
+user_input = st.number_input("अपना जवाब यहाँ लिखें:", step=1)
 
-    # User Input
-    user_ans = st.number_input("Enter your answer:", step=1, key="answer_input")
-
-    if st.button("Submit Answer"):
-        # Logic to check answer
-        correct_ans = eval(f"{st.session_state.num1} {st.session_state.op} {st.session_state.num2}")
-        
-        if user_ans == correct_ans:
-            st.success("Correct! 🎉")
-            st.session_state.score += 1
-        else:
-            st.error(f"Wrong! The answer was {correct_ans}.")
-
-        # Check if game should continue
-        if st.session_state.question_count < 4:
-            next_question()
-            st.rerun()
-        else:
-            st.session_state.game_over = True
-            st.rerun()
-
-else:
-    st.balloons()
-    st.header("Game Over!")
-    st.subheader(f"Your final score: {st.session_state.score} / 5")
-    if st.button("Play Again"):
-        reset_game()
-        st.rerun()
+if st.button("Check Answer"):
+    if user_input == st.session_state.ans:
+        st.success("सही जवाब! 🎯")
+        st.balloons()
+    else:
+        st.error(f"गलत! सही जवाब {st.session_state.ans} था।")
