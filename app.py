@@ -1,29 +1,69 @@
 import streamlit as st
 import random
+import time
 
-st.title("🧮 सिंपल मैथ क्विज़")
+# Page config
+st.set_page_config(page_title="Math Game 🎮", page_icon="🧠")
 
-# गेम को रीसेट करने के लिए बटन
-if st.button('नया सवाल लाओ'):
-    st.session_state.num1 = random.randint(1, 20)
-    st.session_state.num2 = random.randint(1, 20)
-    st.session_state.ans = st.session_state.num1 + st.session_state.num2
+# Title
+st.title("🧠 Math Challenge Game")
+st.write("Test your math skills and beat your score!")
 
-# पहली बार चलाने के लिए वैल्यू सेट करना
-if 'num1' not in st.session_state:
-    st.session_state.num1 = random.randint(1, 20)
-    st.session_state.num2 = random.randint(1, 20)
-    st.session_state.ans = st.session_state.num1 + st.session_state.num2
+# Session state
+if "score" not in st.session_state:
+    st.session_state.score = 0
+if "question" not in st.session_state:
+    st.session_state.question = ""
+if "answer" not in st.session_state:
+    st.session_state.answer = 0
 
-# सवाल दिखाएं
-st.subheader(f"बताओ: {st.session_state.num1} + {st.session_state.num2} = ?")
+# Difficulty level
+level = st.selectbox("Select Difficulty", ["Easy", "Medium", "Hard"])
 
-# जवाब इनपुट
-user_input = st.number_input("अपना जवाब यहाँ लिखें:", step=1)
-
-if st.button("Check Answer"):
-    if user_input == st.session_state.ans:
-        st.success("सही जवाब! 🎯")
-        st.balloons()
+# Function to generate question
+def generate_question(level):
+    if level == "Easy":
+        a, b = random.randint(1, 10), random.randint(1, 10)
+        op = random.choice(["+", "-"])
+    elif level == "Medium":
+        a, b = random.randint(10, 50), random.randint(1, 20)
+        op = random.choice(["+", "-", "*"])
     else:
-        st.error(f"गलत! सही जवाब {st.session_state.ans} था।")
+        a, b = random.randint(20, 100), random.randint(1, 50)
+        op = random.choice(["+", "-", "*", "/"])
+
+    question = f"{a} {op} {b}"
+    answer = eval(question)
+    return question, round(answer, 2)
+
+# Generate question button
+if st.button("Generate Question"):
+    q, ans = generate_question(level)
+    st.session_state.question = q
+    st.session_state.answer = ans
+
+# Display question
+if st.session_state.question:
+    st.subheader(f"Question: {st.session_state.question}")
+
+    user_answer = st.text_input("Your Answer:")
+
+    if st.button("Submit Answer"):
+        try:
+            if float(user_answer) == st.session_state.answer:
+                st.success("✅ Correct!")
+                st.session_state.score += 1
+            else:
+                st.error(f"❌ Wrong! Correct answer: {st.session_state.answer}")
+        except:
+            st.warning("⚠️ Please enter a valid number!")
+
+# Score display
+st.write(f"🏆 Score: {st.session_state.score}")
+
+# Reset game
+if st.button("Reset Game"):
+    st.session_state.score = 0
+    st.session_state.question = ""
+    st.session_state.answer = 0
+    st.success("Game Reset!")
